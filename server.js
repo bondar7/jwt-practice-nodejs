@@ -14,6 +14,7 @@ require('dotenv').config();
 
 app.use("/register", require("./routes/register"));
 app.use("/auth", require("./routes/auth"));
+app.use("/refresh", require("./routes/refresh"));
 
 // verify JWT access token for routes below
 app.use(require("./middleware/verifyJWT"));
