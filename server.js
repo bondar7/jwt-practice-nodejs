@@ -10,6 +10,8 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 
+require('dotenv').config();
+
 app.use("/register", require("./routes/register"));
 app.use("/auth", require("./routes/auth"));
 

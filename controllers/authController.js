@@ -15,7 +15,24 @@ const handleLogin = async (req, res, next) => {
   if (!foundUser) return res.sendStatus(404);
   try {
     if (!await bcrypt.compare(password, foundUser.password)) return res.status(404).json({message: "Invalid password."});
-    res.status(200).json({message: "You've logged in."})
+    //creating JWTs
+    const accessToken = jwt.sign(
+      { username: foundUser.username },
+      process.env.ACCESS_TOKEN_SECRET,
+      { expiresIn: "30s" }
+    );
+    const refreshToken = jwt.sign(
+      { username: foundUser.username },
+      process.env.REFRESH_TOKEN_SECRET,
+      { expiresIn: "1d" }
+    );
+    const otherUsers = usersDB.users.filter(user => user.username !== foundUser.username);
+    const currentUser = {...foundUser, refreshToken};
+    usersDB.setUsers([...otherUsers, currentUser]);
+    await fsPromises.writeFile(path.join(__dirname, "..", "data", "users.json"), JSON.stringify(usersDB.users));
+    res.cookie("jwt", refreshToken, { httpOnly: true, sameSite: "None", secure: true });
+    res.status(200).json({accessToken});
+    console.log(accessToken);
   } catch (err) {
     res.sendStatus(500);
   }
