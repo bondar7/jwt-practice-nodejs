@@ -11,6 +11,7 @@ app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 
 app.use("/register", require("./routes/register"));
+app.use("/auth", require("./routes/auth"));
 
 // error handler
 app.use((err, req, res, next) => {
