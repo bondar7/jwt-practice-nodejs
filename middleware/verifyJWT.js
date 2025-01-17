@@ -11,9 +11,15 @@ const verifyJWT = (req, res, next) => {
     token,
     process.env.ACCESS_TOKEN_SECRET,
     (err, decodedToken) => {
-      if (err) return res.sendStatus(403); // Invalid Token
+      if (err) {
+        if (err.name === "TokenExpiredError") {
+          return res.sendStatus(401); // Expired Token
+        } else {
+          return res.sendStatus(403); // Invalid Token
+        }
+      }; // Invalid Token
       req.user = decodedToken;
-      console.log("JWT is correct");
+      console.log(decodedToken);
       next();
     }
   )

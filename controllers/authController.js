@@ -19,7 +19,7 @@ const handleLogin = async (req, res, next) => {
     const accessToken = jwt.sign(
       { username: foundUser.username },
       process.env.ACCESS_TOKEN_SECRET,
-      { expiresIn: "2m" }
+      { expiresIn: "30s" }
     );
     const refreshToken = jwt.sign(
       { username: foundUser.username },
@@ -30,7 +30,7 @@ const handleLogin = async (req, res, next) => {
     const currentUser = {...foundUser, refreshToken};
     usersDB.setUsers([...otherUsers, currentUser]);
     await fsPromises.writeFile(path.join(__dirname, "..", "data", "users.json"), JSON.stringify(usersDB.users));
-    res.cookie("jwt", refreshToken, { httpOnly: true, sameSite: "None", secure: true });
+    res.cookie("jwt", refreshToken, { httpOnly: true, sameSite: "None", partitioned: true, secure: true });
     res.status(200).json({accessToken});
     console.log(accessToken);
   } catch (err) {

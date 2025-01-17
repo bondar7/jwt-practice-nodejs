@@ -1,8 +1,19 @@
 const express = require("express");
 const app = express();
 const cors = require("cors");
-const corsOptions = require("./config/corsOptions");
+// const corsOptions = require("./config/corsOptions");
 const cookieParser = require("cookie-parser");
+
+const whiteList = ["http://localhost:5501", "http://127.0.0.1:5501"];
+const corsOptions = {
+  origin: (origin, callback) => {
+    console.log("CORS origin check:", origin);
+    if (whiteList.indexOf(origin) !== -1 || !origin) callback(null, true);
+    else callback(new Error("Not allowed by CORS"));
+  },
+  credentials: true, // Automaticky přidá Access-Control-Allow-Credentials: true
+  optionsSuccessStatus: 200
+}
 
 app.use(cors(corsOptions));
 
