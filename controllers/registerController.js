@@ -14,7 +14,10 @@ const handleRegistration = async (req, res, next) => {
   if (dublicate) return res.sendStatus(409); // Conflict
   try {
     const hashedPwd = await bcrypt.hash(password.toString(), 10);
-    const currentUser = { username, password: hashedPwd };
+    const currentUser = {
+       username, 
+       roles: { "User": 2001 },
+       password: hashedPwd };
     usersDB.setUsers([...usersDB.users, currentUser]);
     await fsPromises.writeFile(path.join(__dirname, "..", "data", "users.json"), JSON.stringify(usersDB.users));
     console.log(usersDB.users);

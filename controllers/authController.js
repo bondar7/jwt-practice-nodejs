@@ -15,14 +15,22 @@ const handleLogin = async (req, res, next) => {
   if (!foundUser) return res.sendStatus(404);
   try {
     if (!await bcrypt.compare(password, foundUser.password)) return res.status(404).json({message: "Invalid password."});
+    const roles = Object.values(foundUser.roles); // gets only values from properties and puts them in array.
     //creating JWTs
     const accessToken = jwt.sign(
-      { username: foundUser.username },
+      { 
+        userInfo: {
+          username: foundUser.username,
+          roles: roles 
+        },
+      },
       process.env.ACCESS_TOKEN_SECRET,
       { expiresIn: "30s" }
     );
     const refreshToken = jwt.sign(
-      { username: foundUser.username },
+      { 
+        username: foundUser.username
+      },
       process.env.REFRESH_TOKEN_SECRET,
       { expiresIn: "1d" }
     );

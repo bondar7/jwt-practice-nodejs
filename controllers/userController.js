@@ -8,8 +8,8 @@ const getUsersCount = (req, res, next) => {
   res.status(200).json({data: `Registered users: ${usersCount}`});
 }
 const getUserInfo = (req, res, next) => {
-  const info = req.user;
-  res.status(200).json({data: info.username});
+  const username = req.username;
+  res.status(200).json({data: username});
 }
 
 module.exports = {getUsersCount, getUserInfo};

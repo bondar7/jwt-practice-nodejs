@@ -16,15 +16,21 @@ const handleRefreshToken = async (req, res, next) => {
   const foundUser = usersDB.users.find(user => user.refreshToken === refreshToken);
   if (!foundUser) return res.sendStatus(404);
   try {
-      //verify JWT
+  //verify JWT
   jwt.verify(
     refreshToken,
     process.env.REFRESH_TOKEN_SECRET,
     (err, decodedToken) => {
       if (err || decodedToken.username !== foundUser.username) res.sendStatus(403);
+      const roles = Object.values(foundUser.roles);
       //generate new access token
       const accessToken = jwt.sign(
-        { username: decodedToken.username },
+        { 
+          "UserInfo": {
+            username: decodedToken.username,
+            roles: roles
+          }
+        },
         process.env.ACCESS_TOKEN_SECRET,
         { expiresIn: "30s" }
       );
