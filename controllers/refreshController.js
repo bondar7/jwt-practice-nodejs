@@ -1,19 +1,12 @@
-const usersDB = {
-  users: require("../data/users.json"),
-  setUsers: function(users) {this.users = users}
-}
-
 const jwt = require("jsonwebtoken");
-const fs = require("fs");
-const path = require("path");
+const usersController = require("../db/usersController");
 
 const handleRefreshToken = async (req, res, next) => {
   const cookies = req.cookies;
   if(!cookies?.jwt) return res.status(400).json({message: "cookies are required!"});
   const refreshToken = cookies.jwt;
   console.log("refreshToken:", refreshToken);
-  
-  const foundUser = usersDB.users.find(user => user.refreshToken === refreshToken);
+  const foundUser = await usersController.userExists(null, refreshToken);
   if (!foundUser) return res.sendStatus(404);
   try {
   //verify JWT
@@ -27,6 +20,7 @@ const handleRefreshToken = async (req, res, next) => {
       const accessToken = jwt.sign(
         { 
           "UserInfo": {
+            id: foundUser._id,
             username: decodedToken.username,
             roles: roles
           }
@@ -40,15 +34,12 @@ const handleRefreshToken = async (req, res, next) => {
         process.env.REFRESH_TOKEN_SECRET,
         { expiresIn: "1d" }
       );
-      const otherUsers = usersDB.users.filter(user => user.username !== decodedToken.username); 
-      const updatedUser = {...foundUser, refreshToken};
-      usersDB.setUsers([...otherUsers, updatedUser]);
-      fs.writeFileSync(path.join(__dirname, "..", "data", "users.json"), JSON.stringify(usersDB.users));
-      res.cookie("jwt", refreshToken, {httpOnly: true, sameSite: "None", partitioned: true, secure: true});
-      res.json({accessToken});
-      console.log("generated access token: ", accessToken);
-      console.log("generated refresh token: ", refreshToken);
-      
+      usersController.updateRefreshToken(decodedToken.username, refreshToken).then(() => {
+        res.cookie("jwt", refreshToken, {httpOnly: true, sameSite: "None", partitioned: true, secure: true});
+        res.json({accessToken});
+        console.log("generated access token: ", accessToken);
+        console.log("generated refresh token: ", refreshToken);
+      });
     }
   );
   } catch (err) {
